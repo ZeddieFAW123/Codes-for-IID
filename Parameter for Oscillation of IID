@@ -53,13 +53,5 @@ tSpan = [0 200];  % days
 S_sol = XSol(:,1);
 P_sol = XSol(:,2);
 
-%% 5a. Plot the Time‐Series
-figure;
-plot(tSol, S_sol, 'LineWidth', 2); hold on;
-plot(tSol, P_sol, 'LineWidth', 2);
-xlabel('Time (\itt)');
-ylabel('Population Size');
-legend({'Seaweed (\itS)', 'Pathogen (\itP)'}, 'Location', 'best');
-title('Seaweed–Pathogen Model Simulation (Time Series)');
-grid on;
+
 
