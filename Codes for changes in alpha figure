@@ -1,0 +1,81 @@
+% runMultipleSeaweedPredatorModel_singlePlot.m
+% This script varies the predation rate alpha over 3 steps and plots both 
+% seaweed (S) and pathogen (P) dynamics on a single graph.
+
+clear; clc; close all;
+
+%% 1. Baseline Model Parameters (that remain fixed)
+param.r      = 0.06;   % Intrinsic growth rate of seaweed (day^-1)
+param.beta   = 0.4;    % Conversion efficiency of S to P
+param.mu     = 0.06;   % Natural death rate of pathogen
+
+% Environmental conditions (constant)
+param.sigma  = 30;     
+param.delta  = 29;     
+
+% Optimal conditions for seaweed
+param.sigma0S = 30;  
+param.delta0S = 28;  
+
+% Optimal conditions for pathogen
+param.sigma0P = 31;
+param.delta0P = 30;
+
+% Exponential coefficients (moderate)
+param.a1 = 0.05; 
+param.b1 = 0.05;
+param.a2 = 0.05;
+param.b2 = 0.05;
+
+% No extra predator growth term
+param.a3   = 0;   
+param.b3   = 0;
+param.fmin = 0.0;
+param.fmax = 0.0;
+
+% Carrying capacity parameters (so that K(σ,δ) ≈ 1000)
+param.Kmin = 500;   
+param.Kmax = 500;   
+
+%% 2. Initial Conditions and Time Span
+S0 = 50;       % Initial seaweed biomass
+P0 = 5;        % Initial pathogen population
+X0 = [S0; P0];
+tSpan = [0 200];  % Simulation time (days)
+
+%% 3. Define 3 Values for alpha (Predation Rate)
+% Lower values favor seaweed thriving by reducing predation pressure.
+alphaValues = [0.001, 0.003, 0.005];
+
+%% 4. Set Up a Single Plot for All Simulations
+figure;
+hold on; grid on;
+xlabel('Time$(t)$', 'Interpreter', 'latex', 'FontSize', 14);
+ylabel('Population$(N)$', 'Interpreter', 'latex', 'FontSize', 14);
+title('Changes of the Dynamical System According to $\alpha$ values', 'Interpreter', 'latex', 'FontSize', 14);
+
+% Get distinct colors for each simulation
+colors = lines(length(alphaValues));
+
+%% 5. Loop Over Each alpha Value, Solve, and Plot
+for i = 1:length(alphaValues)
+    % Update the predation rate
+    param.alpha = alphaValues(i);
+    
+    % Solve the ODE system with the current alpha
+    [tSol, XSol] = ode45(@(t,X) seaweedPredatorModel(t, X, param), tSpan, X0);
+    
+    % Separate seaweed and pathogen solutions
+    S_sol = XSol(:,1);
+    P_sol = XSol(:,2);
+    
+    % Plot seaweed with a solid line
+    plot(tSol, S_sol, 'LineWidth', 2, 'Color', colors(i,:), ...
+         'DisplayName', sprintf('S, \\alpha = %.4f', alphaValues(i)));
+     
+    % Plot pathogen with a dashed line
+    plot(tSol, P_sol, '--', 'LineWidth', 2, 'Color', colors(i,:), ...
+         'DisplayName', sprintf('P, \\alpha = %.4f', alphaValues(i)));
+end
+
+legend('show','Location','best');
