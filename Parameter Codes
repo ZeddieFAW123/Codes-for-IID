@@ -1,0 +1,152 @@
+function dXdt = seaweedPredatorModel(t, X, param)
+% seaweedPredatorModel
+% ODE system describing seaweed (prey) S and pathogen (predator) P
+%
+% Inputs:
+%   t     = time (not used explicitly here, but required by ODE solvers)
+%   X     = [S; P] state vector
+%   param = structure containing all parameters
+%
+% Output:
+%   dXdt  = [dS/dt; dP/dt]
+
+    % Unpack state variables
+    S = X(1);
+    P = X(2);
+
+    % Unpack parameters (you can add or remove as needed)
+    r      = param.r;        % Intrinsic growth rate of prey (seaweed)
+    alpha  = param.alpha;    % Attack rate of predator on prey
+    beta   = param.beta;     % Efficiency of converting consumed prey to predator growth
+    mu     = param.mu;       % Predator mortality rate
+    
+    % Environmental parameters (current salinity, temperature)
+    sigma  = param.sigma;    
+    delta  = param.delta;
+    
+    % Optimal conditions for seaweed (prey)
+    sigma0S = param.sigma0S;
+    delta0S = param.delta0S;
+    
+    % Optimal conditions for pathogen (predator)
+    sigma0P = param.sigma0P;
+    delta0P = param.delta0P;
+    
+    % Exponential coefficients
+    a1 = param.a1;  b1 = param.b1;
+    a2 = param.a2;  b2 = param.b2;
+    a3 = param.a3;  b3 = param.b3;
+    
+    % Carrying capacity params
+    Kmin  = param.Kmin;
+    Kmax  = param.Kmax;
+    
+    % Additional predator-growth params
+    fmin  = param.fmin;
+    fmax  = param.fmax;
+
+    % ---------- Define K(σ, δ) ----------
+    % K(σ, δ) = Kmin + Kmax * exp(-[a1(σ-σ0^S)^2 + b1(δ-δ0^S)^2])
+    Ksd = Kmin + Kmax * exp( - (a1*(sigma - sigma0S)^2 + ...
+                                b1*(delta - delta0S)^2 ) );
+
+    % ---------- Define ψ(σ, δ) ----------
+    % ψ(σ, δ) = exp(-[a2(σ-σ0^S)^2 + b2(δ-δ0^S)^2])
+    psd = exp( - ( a2*(sigma - sigma0S)^2 + ...
+                   b2*(delta - delta0S)^2 ) );
+
+    % ---------- Define f(σ, δ) ----------
+    % f(σ, δ) = fmin + fmax * exp(-[a3(σ-σ0^P)^2 + b3(δ-δ0^P)^2])
+    fsd = fmin + fmax * exp( - ( a3*(sigma - sigma0P)^2 + ...
+                                 b3*(delta - delta0P)^2 ) );
+
+    % ---------- ODEs ----------
+    % dS/dt = ψ(σ, δ)*r*S*(1 - S/K(σ,δ)) - αβ*S*P
+    dSdt = psd * r * S * (1 - S / Ksd) - alpha * beta * S * P;
+    
+    % dP/dt = αβ*S*P + f(σ, δ)*P - μ*P
+    %        = αβ*S*P + P*( f(σ, δ) - μ )
+    dPdt = alpha * beta * S * P + fsd * P - mu * P;
+
+    % Return as column vector
+    dXdt = [dSdt; dPdt];
+end
+function dXdt = seaweedPredatorModel(t, X, param)
+% seaweedPredatorModel
+% ODE system describing seaweed (prey) S and pathogen (predator) P
+%
+% Inputs:
+%   t     = time (not used explicitly here, but required by ODE solvers)
+%   X     = [S; P] state vector
+%   param = structure containing all parameters
+%
+% Output:
+%   dXdt  = [dS/dt; dP/dt]
+
+    % Unpack state variables
+    S = X(1);  % Seaweed
+    P = X(2);  % Pathogen (predator)
+
+    % Unpack parameters
+    % --------------------------
+    % Growth / Predation
+    r      = param.r;     
+    alpha  = param.alpha;
+    beta   = param.beta;  
+    mu     = param.mu;    
+
+    % Environmental conditions
+    sigma  = param.sigma;    
+    delta  = param.delta;
+    
+    % Optimal conditions for seaweed (S)
+    sigma0S = param.sigma0S;
+    delta0S = param.delta0S;
+    
+    % Optimal conditions for pathogen (P)
+    sigma0P = param.sigma0P;
+    delta0P = param.delta0P;
+    
+    % Exponential coefficients
+    a1 = param.a1;  b1 = param.b1;
+    a2 = param.a2;  b2 = param.b2;
+    a3 = param.a3;  b3 = param.b3;
+    
+    % Carrying capacity parameters
+    Kmin  = param.Kmin;
+    Kmax  = param.Kmax;
+    
+    % Additional growth term for the predator
+    fmin  = param.fmin;
+    fmax  = param.fmax;
+
+    % ------------------------------------------------
+    % 1) K(σ, δ) = Kmin + Kmax * exp(-(a1(σ-σ0^S)^2 + b1(δ-δ0^S)^2))
+    % ------------------------------------------------
+    Ksd = Kmin + Kmax * exp(- (a1*(sigma - sigma0S)^2 + ...
+                               b1*(delta - delta0S)^2));
+    
+    % ------------------------------------------------
+    % 2) ψ(σ, δ) = exp(-(a2(σ-σ0^S)^2 + b2(δ-δ0^S)^2))
+    % ------------------------------------------------
+    psd = exp(-(a2*(sigma - sigma0S)^2 + ...
+                b2*(delta - delta0S)^2));
+    
+    % ------------------------------------------------
+    % 3) f(σ, δ) = fmin + fmax * exp(-(a3(σ-σ0^P)^2 + b3(δ-δ0^P)^2))
+    % ------------------------------------------------
+    fsd = fmin + fmax * exp(-(a3*(sigma - sigma0P)^2 + ...
+                             b3*(delta - delta0P)^2));
+
+    % ------------------------------------------------
+    % ODEs:
+    % S' = ψ(σ, δ)*r*S*(1 - S/K(σ,δ)) - αβ*S*P
+    % P' = αβ*S*P + f(σ, δ)*P - μ*P
+    % ------------------------------------------------
+    
+    dSdt = psd * r * S * (1 - S / Ksd) - alpha * beta * S * P;
+    dPdt = alpha * beta * S * P + fsd * P - mu * P;
+
+    % Return the derivatives
+    dXdt = [dSdt; dPdt];
+end
