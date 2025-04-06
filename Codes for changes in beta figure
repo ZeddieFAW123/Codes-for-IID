@@ -34,7 +34,7 @@ param.fmin = 0.0;
 param.fmax = 0.0;
 
 % Carrying capacity parameters (so that K(σ,δ) ≈ 1000)
-param.Kmin = 500;   
+param.Kmin = 100;   
 param.Kmax = 500;   
 
 %% 2. Initial Conditions and Time Span
