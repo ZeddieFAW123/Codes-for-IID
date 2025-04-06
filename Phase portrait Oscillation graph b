@@ -1,58 +1,99 @@
-%% Refined Phase Portrait with Distinct Colors, Directional Arrows, and Population Limit 20
+%% Enhanced Phase Portrait with Initial and Final Markers
 
-% Set population limit and assume carrying capacity equal to the limit
-popLimit = 100;
-K = popLimit;
+% Clear workspace and figures
+clear; close all; clc;
 
-% Compute equilibria:
-% 1. Extinction equilibrium
-eq1 = [0, 0];
-% 2. Seaweed-only equilibrium (pathogen absent)
-eq2 = [K, 0];
-% 3. Coexistence equilibrium (computed from model parameters)
-S_star = param.mu / (param.beta * param.alpha);
-P_star = param.r * (1 - S_star / K) / param.alpha;
-eq3 = [S_star, P_star];
+%% 1. Define Model Parameters
+param.r      = 0.20;   % Intrinsic growth rate of seaweed (day^-1)
+param.alpha  = 0.01;   % Predation rate coefficient (increased)
+param.beta   = 0.8;    % Conversion efficiency of S to P
+param.mu     = 0.05;   % Natural death rate (pathogen)
 
-% Create a new figure with a white background
-figure('Color', 'w');
-hold on;
+% Environmental conditions
+param.sigma  = 30;     % Current salinity
+param.delta  = 29;     % Current temperature
 
-% Define colors:
-trajColor  = [0, 0.4470, 0.7410];   % Blue for the trajectory
-arrowColor = [0.8500, 0.3250, 0.0980];% Orange for the directional arrows
-% Equilibria: eq1 = black, eq2 = red, eq3 = green
+% Optimal conditions for seaweed and pathogen
+param.sigma0S = 30;  
+param.delta0S = 28;  
+param.sigma0P = 31;
+param.delta0P = 30;
 
-% Plot the ODE trajectory (assuming S_sol and P_sol are defined)
-plot(S_sol, P_sol, 'Color', trajColor, 'LineWidth', 2);
+% Exponential coefficients (kept modest)
+param.a1 = 0.05; 
+param.b1 = 0.05;
+param.a2 = 0.05;
+param.b2 = 0.05;
 
-% Add directional arrows along the trajectory
-arrowInterval = 10;  % Place an arrow every 10 points
-for i = 1:arrowInterval:(length(S_sol)-1)
-    dx = S_sol(i+1) - S_sol(i);
-    dy = P_sol(i+1) - P_sol(i);
-    % Use quiver to plot an arrow at each interval
-    quiver(S_sol(i), P_sol(i), dx, dy, 0, ...
-           'Color', arrowColor, 'MaxHeadSize', 1.5, 'LineWidth', 1.2);
+% Set f(σ,δ) close to 0 so the predator relies mostly on feeding to grow
+param.a3 = 0;   
+param.b3 = 0;
+param.fmin = 0.0;
+param.fmax = 0.0;
+
+% Carrying capacity parameters
+param.Kmin  = 100;
+param.Kmax  = 900;  % K(σ,δ) will be roughly between 100 and 1000
+
+%% 2. Initial Conditions and Time Span
+S0 = 40;  % Initial seaweed population
+P0 = 5;   % Initial pathogen population
+X0 = [S0; P0];
+tSpan = [0 200];  % Simulation time in days
+
+%% 3. Solve the ODE System
+[tSol, XSol] = ode45(@(t,X) seaweedPredatorModel(t, X, param), tSpan, X0);
+S_sol = XSol(:,1);
+P_sol = XSol(:,2);
+
+%% 4. Create a Grid for the Vector Field (Phase Space)
+Svals = linspace(0, 100, 25);  % Adjust S range as needed
+Pvals = linspace(0, 100, 25);   % Adjust P range as needed
+[Smesh, Pmesh] = meshgrid(Svals, Pvals);
+
+% Preallocate derivative matrices
+dS = zeros(size(Smesh));
+dP = zeros(size(Pmesh));
+
+% Compute the vector field at each grid point
+for i = 1:numel(Smesh)
+    state = [Smesh(i); Pmesh(i)];
+    dYdt = seaweedPredatorModel(0, state, param);  % System is autonomous
+    dS(i) = dYdt(1);
+    dP(i) = dYdt(2);
 end
 
-% Plot equilibrium points with distinct markers:
-plot(eq1(1), eq1(2), 'ko', 'MarkerFaceColor', 'k', 'MarkerSize', 8);  % Extinction (black)
-plot(eq2(1), eq2(2), 'ro', 'MarkerFaceColor', 'r', 'MarkerSize', 8);  % Seaweed-only (red)
-plot(eq3(1), eq3(2), 'go', 'MarkerFaceColor', 'g', 'MarkerSize', 8);  % Coexistence (green)
-
-% Set axis limits and labels
-axis([0 popLimit 0 popLimit]);
-xlabel('Seaweed$(S)$', 'Interpreter', 'latex', 'FontSize', 14);
-ylabel('Pathogen$(P)$', 'Interpreter', 'latex', 'FontSize', 14);
-title('Phase Portrait of Seaweed--Pathogen Dynamics', 'Interpreter', 'latex', 'FontSize', 16);
-
-% Add a legend (note: arrows are represented by the trajectory color)
-legend({'Trajectory', 'Directional Arrows', 'Equilibria'}, ...
-       'Interpreter', 'latex', 'FontSize', 12, 'Location', 'best');
-
-% Enhance plot aesthetics
-set(gca, 'FontSize', 14, 'LineWidth', 1.5, 'Box', 'on', 'TickDir', 'out', ...
-    'XMinorTick', 'on', 'YMinorTick', 'on');
+%% 5. Plot the Enhanced Phase Portrait
+figure;
+hold on;
+box on;
 grid on;
-hold off;
+
+% Plot the vector field using quiver with automatic scaling
+q = quiver(Smesh, Pmesh, dS, dP, 'AutoScale', 'on', 'Color', [0.8 0.2 0.2]);
+set(q, 'LineWidth', 1);
+
+% Overlay the solution trajectory from the simulation
+plot(S_sol, P_sol, 'b-', 'LineWidth', 2);
+
+% Mark the initial condition with a green circle
+plot(S_sol(1), P_sol(1), 'go', 'MarkerSize', 8, 'MarkerFaceColor', 'g');
+
+% Mark the final condition with a black square
+plot(S_sol(end), P_sol(end), 'ks', 'MarkerSize', 8, 'MarkerFaceColor', 'k');
+
+% Customize axes, labels, and title
+xlabel('Seaweed$(S)$', 'Interpreter', 'latex', 'FontSize', 14);
+ylabel('Pathogen$(P$)', 'Interpreter', 'latex', 'FontSize', 14);
+title('Phase Portrait Seaweed-Pathogen Dynamics', 'Interpreter', 'latex', 'FontSize', 14);
+
+% Set limits based on grid values
+xlim([min(Svals) max(Svals)]);
+ylim([min(Pvals) max(Pvals)]);
+
+% Add a legend
+legend({'Vector Field', 'Trajectory', 'Initial Condition', 'Final Condition'}, ...
+       'Location', 'best', 'FontSize', 10);
+
+% Style the axes
+set(gca, 'FontSize', 12, 'LineWidth', 1.5);
