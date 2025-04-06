@@ -1,10 +1,9 @@
-%% 1. Define model parameters
-% Increase the intrinsic growth rate of seaweed (r)
-% and the predation rate (alpha) to encourage oscillations
-param.r      = 0.20;   % Intrinsic growth rate of seaweed (day^-1)
-param.alpha  = 0.01;   % Predation rate coefficient (increased)
-param.beta   = 0.8;    % Conversion efficiency of S to P
-param.mu     = 0.05;   % Natural death rate (pathogen)
+%% 1. Define modified model parameters for steady state behavior
+% Adjusting parameters to encourage damping toward a steady state:
+param.r      = 0.15;   % Slightly reduced intrinsic growth rate of seaweed (day^-1)
+param.alpha  = 0.005;  % Reduced predation rate coefficient
+param.beta   = 0.8;    % Conversion efficiency remains unchanged
+param.mu     = 0.10;   % Increased natural death rate (pathogen)
 
 % Environmental conditions (assumed constant here)
 param.sigma  = 30;     % Current salinity
@@ -18,25 +17,21 @@ param.delta0S = 28;
 param.sigma0P = 31;
 param.delta0P = 30;
 
-% Exponential coefficients
-% (Keep them modest so we don't suppress or boost growth too strongly.)
+% Exponential coefficients (kept modest)
 param.a1 = 0.05; 
 param.b1 = 0.05;
 param.a2 = 0.05;
 param.b2 = 0.05;
 
-% -- Here's the trick: set f(σ,δ) close to 0 so the predator
-%    relies mostly on feeding to grow (classic predator-prey).
-%    This often helps generate stable or sustained oscillations.
+% Set f(σ,δ) values close to zero as before:
 param.a3 = 0;   
 param.b3 = 0;
 param.fmin = 0.0;
 param.fmax = 0.0;
 
-% Carrying capacity parameters
-% Give the seaweed enough capacity to grow large and "fuel" the predator.
+% Carrying capacity parameters remain unchanged
 param.Kmin  = 100;
-param.Kmax  = 900;  % This means K(σ,δ) could be ~100 to 1000 total
+param.Kmax  = 900;  
 
 %% 2. Initial Conditions
 S0 = 40;  % Seaweed
@@ -57,8 +52,8 @@ P_sol = XSol(:,2);
 figure;
 plot(tSol, S_sol, 'LineWidth', 2); hold on;
 plot(tSol, P_sol, 'LineWidth', 2);
-xlabel('Time (\itt)');
-ylabel('Population Size');
+xlabel('Time ($t$)', 'Interpreter', 'latex', 'FontSize', 14);
+ylabel('Population Size', 'Interpreter', 'latex', 'FontSize', 14);
+title('Oscillating Seaweed-Pathogen Model ', 'Interpreter', 'latex', 'FontSize', 14);
 legend({'Seaweed (\itS)', 'Pathogen (\itP)'}, 'Location', 'best');
-title('Seaweed–Pathogen Model Simulation (Time Series)');
 grid on;
