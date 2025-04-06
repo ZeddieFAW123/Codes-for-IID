@@ -51,7 +51,7 @@ betaValues = [0.2, 0.4, 0.6];
 figure;
 hold on; grid on;
 xlabel('Time$(t)$', 'Interpreter', 'latex', 'FontSize', 14);
-ylabel('Population$(N)$', 'Interpreter', 'latex', 'FontSize', 14);
+ylabel('Population Size', 'Interpreter', 'latex', 'FontSize', 14);
 title('Dynamical System Changes with Varying $\beta$ Values', 'Interpreter', 'latex', 'FontSize', 14);
 
 % Get distinct colors for each simulation
