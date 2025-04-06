@@ -63,10 +63,3 @@ legend({'Seaweed (\itS)', 'Pathogen (\itP)'}, 'Location', 'best');
 title('Seaweed–Pathogen Model Simulation (Time Series)');
 grid on;
 
-%% 5b. Plot the Phase‐Plane (Optional)
-figure;
-plot(S_sol, P_sol, 'LineWidth', 2);
-xlabel('Seaweed (S)');
-ylabel('Pathogen (P)');
-title('Phase Plane: Seaweed vs. Pathogen');
-grid on;
