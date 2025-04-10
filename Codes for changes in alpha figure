@@ -45,12 +45,12 @@ tSpan = [0 200];  % Simulation time (days)
 
 %% 3. Define 3 Values for alpha (Predation Rate)
 % Lower values favor seaweed thriving by reducing predation pressure.
-alphaValues = [0.001, 0.003, 0.005];
+alphaValues = [0.001, 0.003, 0.005]; %for the second figure change the value from  [0.006, 0.007, 0.006]
 
 %% 4. Set Up a Single Plot for All Simulations
 figure;
 hold on; grid on;
-xlabel('Time$(t)$', 'Interpreter', 'latex', 'FontSize', 14);
+xlabel('Time$(t)$/Days', 'Interpreter', 'latex', 'FontSize', 14);
 ylabel('Population$(N)$', 'Interpreter', 'latex', 'FontSize', 14);
 title('Changes of the Dynamical System According to $\alpha$ values', 'Interpreter', 'latex', 'FontSize', 14);
 
@@ -77,5 +77,5 @@ for i = 1:length(alphaValues)
     plot(tSol, P_sol, '--', 'LineWidth', 2, 'Color', colors(i,:), ...
          'DisplayName', sprintf('P, \\alpha = %.4f', alphaValues(i)));
 end
-
+ylim([0 550]);
 legend('show','Location','best');
