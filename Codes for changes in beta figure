@@ -34,7 +34,7 @@ param.fmin = 0.0;
 param.fmax = 0.0;
 
 % Carrying capacity parameters (so that K(σ,δ) ≈ 1000)
-param.Kmin = 100;   
+param.Kmin = 500;   
 param.Kmax = 500;   
 
 %% 2. Initial Conditions and Time Span
@@ -45,12 +45,12 @@ tSpan = [0 200];  % Simulation time (days)
 
 %% 3. Define 3 Values for β (Conversion Efficiency)
 % These values represent different conversion efficiencies of S to P.
-betaValues = [0.2, 0.4, 0.6];
+betaValues = [0.2, 0.4, 0.6]; % Change this value
 
 %% 4. Set Up a Single Plot for All Simulations
 figure;
 hold on; grid on;
-xlabel('Time$(t)$', 'Interpreter', 'latex', 'FontSize', 14);
+xlabel('Time$(t)/Days$', 'Interpreter', 'latex', 'FontSize', 14);
 ylabel('Population Size', 'Interpreter', 'latex', 'FontSize', 14);
 title('Dynamical System Changes with Varying $\beta$ Values', 'Interpreter', 'latex', 'FontSize', 14);
 
@@ -77,5 +77,5 @@ for i = 1:length(betaValues)
     plot(tSol, P_sol, '--', 'LineWidth', 2, 'Color', colors(i,:), ...
          'DisplayName', sprintf('P, \\beta = %.4f', betaValues(i)));
 end
-
+ylim([0 250]);
 legend('show','Location','best');
