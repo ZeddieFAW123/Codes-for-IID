@@ -46,12 +46,12 @@ tSpan = [0 200];  % Simulation time (days)
 
 %% 3. Define 3 Values for σ (Salinity)
 % These values represent different salinity conditions.
-sigmaValues = [33, 32, 30];
+sigmaValues = [33, 32, 30]; %change this value
 
 %% 4. Set Up a Single Plot for All Simulations
 figure;
 hold on; grid on;
-xlabel('Time$(t)$', 'Interpreter', 'latex', 'FontSize', 14);
+xlabel('Time$(t)/Days$', 'Interpreter', 'latex', 'FontSize', 14);
 ylabel('Population$(N)$', 'Interpreter', 'latex', 'FontSize', 14);
 title('Dynamical System Changes with Varying $\sigma$ Values', 'Interpreter', 'latex', 'FontSize', 14);
 
@@ -78,5 +78,5 @@ for i = 1:length(sigmaValues)
     plot(tSol, P_sol, '--', 'LineWidth', 2, 'Color', colors(i,:), ...
          'DisplayName', sprintf('P, \\sigma = %.2f', sigmaValues(i)));
 end
-
+ylim([0 160]);
 legend('show','Location','best');
