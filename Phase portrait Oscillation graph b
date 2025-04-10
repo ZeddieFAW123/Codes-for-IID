@@ -1,4 +1,5 @@
 %% 1. Define modified model parameters for steady state behavior
+% Adjusting parameters to encourage damping toward a steady state:
 param.r      = 0.15;   % Slightly reduced intrinsic growth rate of seaweed (day^-1)
 param.alpha  = 0.005;  % Reduced predation rate coefficient
 param.beta   = 0.8;    % Conversion efficiency remains unchanged
@@ -23,14 +24,14 @@ param.a2 = 0.05;
 param.b2 = 0.05;
 
 % Set f(σ,δ) values close to zero as before:
-param.a3 = 0;   
-param.b3 = 0;
-param.fmin = 0.0;
-param.fmax = 0.0;
+param.a3 = 0.5;   
+param.b3 = 0.5;
+param.fmin = 0.001;
+param.fmax = 0.005;
 
 % Carrying capacity parameters remain unchanged
-param.Kmin  = 100;
-param.Kmax  = 900;  
+param.Kmin  = 500;
+param.Kmax  = 1000;   
 
 %% 2. Initial Conditions and Time Span
 S0 = 40;  % Seaweed initial density
