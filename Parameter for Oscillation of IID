@@ -24,17 +24,17 @@ param.a2 = 0.05;
 param.b2 = 0.05;
 
 % Set f(σ,δ) values close to zero as before:
-param.a3 = 0;   
-param.b3 = 0;
-param.fmin = 0.0;
-param.fmax = 0.0;
+param.a3 = 0.5;   
+param.b3 = 0.5;
+param.fmin = 0.001;
+param.fmax = 0.005;
 
 % Carrying capacity parameters remain unchanged
-param.Kmin  = 100;
-param.Kmax  = 900;  
+param.Kmin  = 500;
+param.Kmax  = 1000;  
 
 %% 2. Initial Conditions
-S0 = 40;  % Seaweed
+S0 = 50;  % Seaweed
 P0 = 5;   % Pathogen
 X0 = [S0; P0];
 
@@ -52,7 +52,7 @@ P_sol = XSol(:,2);
 figure;
 plot(tSol, S_sol, 'LineWidth', 2); hold on;
 plot(tSol, P_sol, 'LineWidth', 2);
-xlabel('Time ($t$)', 'Interpreter', 'latex', 'FontSize', 14);
+xlabel('Time ($t$)/Days', 'Interpreter', 'latex', 'FontSize', 14);
 ylabel('Population Size', 'Interpreter', 'latex', 'FontSize', 14);
 title('Oscillating Seaweed-Pathogen Model ', 'Interpreter', 'latex', 'FontSize', 14);
 legend({'Seaweed (\itS)', 'Pathogen (\itP)'}, 'Location', 'best');
