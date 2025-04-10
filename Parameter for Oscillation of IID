@@ -31,7 +31,7 @@ param.fmax = 0.005;
 
 % Carrying capacity parameters remain unchanged
 param.Kmin  = 500;
-param.Kmax  = 1000;  
+param.Kmax  = 500;  
 
 %% 2. Initial Conditions
 S0 = 50;  % Seaweed
