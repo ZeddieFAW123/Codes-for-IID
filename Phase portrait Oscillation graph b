@@ -1,107 +1,55 @@
-%% 1. Define modified model parameters for steady state behavior
-% Adjusting parameters to encourage damping toward a steady state:
-param.r      = 0.15;   % Slightly reduced intrinsic growth rate of seaweed (day^-1)
-param.alpha  = 0.005;  % Reduced predation rate coefficient
-param.beta   = 0.8;    % Conversion efficiency remains unchanged
-param.mu     = 0.10;   % Increased natural death rate (pathogen)
-
-% Environmental conditions (assumed constant here)
-param.sigma  = 30;     % Current salinity
-param.delta  = 29;     % Current temperature
-
-% Optimal conditions for seaweed
-param.sigma0S = 30;  
-param.delta0S = 28;  
-
-% Optimal conditions for pathogen
-param.sigma0P = 31;
-param.delta0P = 30;
-
-% Exponential coefficients (kept modest)
-param.a1 = 0.05; 
-param.b1 = 0.05;
-param.a2 = 0.05;
-param.b2 = 0.05;
-
-% Set f(σ,δ) values close to zero as before:
-param.a3 = 0.5;   
-param.b3 = 0.5;
-param.fmin = 0.001;
-param.fmax = 0.005;
-
-% Carrying capacity parameters remain unchanged
-param.Kmin  = 500;
-param.Kmax  = 500;   
-
-%% 2. Initial Conditions and Time Span
-S0 = 40;  % Seaweed initial density
-P0 = 5;   % Pathogen initial density
-X0 = [S0; P0];
-tSpan = [0 200];  % Simulation time in days
-
-%% 3. Solve the ODE System for the trajectory
-[tSol, XSol] = ode45(@(t,X) seaweedPredatorModel(t, X, param), tSpan, X0);
-S_sol = XSol(:,1);
-P_sol = XSol(:,2);
-
-%% 4. Compute Equilibria
-% The trivial equilibrium is assumed to be at [0,0]
-eq_trivial = [0; 0];
-
-% Use fsolve to compute the positive (coexistence) equilibrium
-opts = optimset('Display','off');
-eq_coexist = fsolve(@(X) seaweedPredatorModel(0, X, param), [S0; P0], opts);
-
-%% 5. Create a Phase Portrait with a Vector Field
-% Define a grid in the state space (range: 0 to 80)
-S_range = linspace(0, 80, 20);
-P_range = linspace(0, 80, 20);
+%% 5. Create a Phase Portrait with a *denser* Vector Field
+nGrid = 31;                             % finer grid → more arrows
+S_range = linspace(0, 120, nGrid);      % match the axis limits you set later
+P_range = linspace(0, 120, nGrid);
 [s, p] = meshgrid(S_range, P_range);
 
-% Preallocate matrices for the derivatives
 ds = zeros(size(s));
 dp = zeros(size(p));
 
-% Evaluate the system at each grid point (autonomous system, so time is arbitrary)
-for i = 1:numel(s)
-    X = [s(i); p(i)];
-    dX = seaweedPredatorModel(0, X, param);
-    ds(i) = dX(1);
-    dp(i) = dX(2);
+for k = 1:numel(s)
+    X       = [s(k); p(k)];
+    dX      = seaweedPredatorModel(0, X, param);
+    ds(k)   = dX(1);
+    dp(k)   = dX(2);
 end
-
-% Normalize the arrow vectors for consistent display.
-% Avoid division by zero by adding a small epsilon.
-epsilon = 1e-8;
-L = sqrt(ds.^2 + dp.^2) + epsilon;
-ds_norm = ds ./ L;
-dp_norm = dp ./ L;
 
 %% 6. Plot the Phase Portrait and Trajectory
 figure;
-% Plot the vector field using quiver (scale factor adjusted for clarity)
-quiver(s, p, ds_norm, dp_norm, 0.5, 'k'); 
+% --- direction field ----------------------------------------------------
+quiver( s, p, ds, dp, ...                % use *un‑normalised* vectors
+        'AutoScale'      , 'on', ...     % let MATLAB scale for you
+        'AutoScaleFactor', 1.1 , ...     % tweak arrow length (≈ 100 %)
+        'Color'          , 'k'  , ...
+        'LineWidth'      , 1   , ...
+        'MaxHeadSize'    , 0.4 );        % trim large arrowheads
 hold on;
+% ------------------------------------------------------------------------
 
-% Overlay the trajectory from the ODE solution
+% trajectory
 plot(S_sol, P_sol, 'b', 'LineWidth', 2);
 
-% Plot and label the computed equilibria as dots
-h_trivial = plot(eq_trivial(1), eq_trivial(2), 'mo', 'MarkerSize', 8, 'MarkerFaceColor', 'm'); % Trivial equilibrium
-text(eq_trivial(1)+2, eq_trivial(2), '$E_0$', 'Interpreter', 'latex', 'FontSize', 14);
+% equilibria
+h_trivial = plot(eq_trivial(1), eq_trivial(2), 'mo', 'MarkerSize', 8, ...
+                 'MarkerFaceColor','m');
+text(eq_trivial(1)+2, eq_trivial(2), '$E_0$', ...
+     'Interpreter','latex', 'FontSize',14);
 
-h_coexist = plot(eq_coexist(1), eq_coexist(2), 'ko', 'MarkerSize', 8, 'MarkerFaceColor', 'k'); % Coexistence equilibrium
-text(eq_coexist(1)+2, eq_coexist(2), '$E^*$', 'Interpreter', 'latex', 'FontSize', 14);
+h_coexist = plot(eq_coexist(1), eq_coexist(2), 'ko', 'MarkerSize', 8, ...
+                 'MarkerFaceColor','k');
+text(eq_coexist(1)+2, eq_coexist(2), '$E^{\!*}$', ...
+     'Interpreter','latex', 'FontSize',14);
 
-% Label axes with valid LaTeX syntax
-xlabel('Seaweed ($\mathit{S}$)', 'Interpreter', 'latex', 'FontSize', 14);
-ylabel('Pathogen ($\mathit{P}$)', 'Interpreter', 'latex', 'FontSize', 14);
-title('Phase Portrait of Seaweed-Pathogen Model', 'Interpreter', 'latex', 'FontSize', 14);
+xlabel('Seaweed ($\mathit{S}$)', 'Interpreter','latex', 'FontSize',14);
+ylabel('Pathogen ($\mathit{P}$)', 'Interpreter','latex', 'FontSize',14);
+title('\textrm{Phase Portrait of Seaweed--Pathogen Model}', ...
+      'Interpreter','latex', ...
+      'FontSize',14);    
 
-% Update legend to include the equilibria dots
-legend({'Direction Field', 'Trajectory', 'Trivial Equilibrium', 'Coexistence Equilibrium'}, 'Location', 'best');
+legend({'Direction field', 'Trajectory', ...
+        'Trivial equilibrium', 'Coexistence equilibrium'}, ...
+        'Location','best');
 
-% Set axis limits and formatting
-axis([0 80 0 80]);   % Set axis limits to the grid range
-axis square;         % Ensure equal scaling on both axes
+axis([0 120 0 120]);
+axis square;
 grid on;
